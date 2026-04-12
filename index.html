@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ポモドーロ集中タイマー — Pomodoro Focus</title>
+  <meta name="description" content="ポモドーロタイマー＋集中ログ。カテゴリ別集計・週次レポート付き。" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+
+    <!-- Header -->
+    <header class="app-header">
+      <h1 data-i18n="title">ポモドーロ集中タイマー</h1>
+      <div class="header-actions">
+        <button id="theme-toggle" class="icon-btn" aria-label="Toggle theme">ダークモード</button>
+        <button id="lang-toggle" class="icon-btn" aria-label="Switch language">EN</button>
+        <button id="btn-settings" class="icon-btn" aria-label="Settings">⚙</button>
+      </div>
+    </header>
+
+    <!-- Tabs -->
+    <nav class="tab-nav" role="tablist">
+      <button id="tab-timer" class="tab-btn active" role="tab" aria-selected="true" data-i18n="phase">タイマー</button>
+      <button id="tab-log"   class="tab-btn" role="tab" aria-selected="false" data-i18n="sessionLog">セッション履歴</button>
+      <button id="tab-stats" class="tab-btn" role="tab" aria-selected="false" data-i18n="weeklyStats">週次集計</button>
+    </nav>
+
+    <!-- ── Timer Panel ────────────────────────────────────────────────── -->
+    <div id="panel-timer" class="panel" role="tabpanel">
+
+      <!-- Phase label -->
+      <p id="phase-label" class="phase-label">集中</p>
+
+      <!-- Circular progress -->
+      <div class="ring-container" aria-live="polite" aria-label="Timer">
+        <svg class="ring-svg" viewBox="0 0 120 120" aria-hidden="true">
+          <circle class="ring-bg"   cx="60" cy="60" r="54" />
+          <circle id="progress-ring" class="ring-progress" cx="60" cy="60" r="54"
+                  stroke-linecap="round"
+                  transform="rotate(-90 60 60)" />
+        </svg>
+        <span id="time-display" class="time-display">25:00</span>
+      </div>
+
+      <!-- Cycle dots -->
+      <div id="cycle-dots" class="cycle-dots" aria-label="Cycle progress"></div>
+
+      <!-- Category pills -->
+      <div class="category-row" role="group" aria-label="Category">
+        <button id="cat-0" class="cat-btn active" aria-pressed="true">仕事</button>
+        <button id="cat-1" class="cat-btn" aria-pressed="false">学習</button>
+        <button id="cat-2" class="cat-btn" aria-pressed="false">運動</button>
+        <button id="cat-3" class="cat-btn" aria-pressed="false">その他</button>
+      </div>
+
+      <!-- Controls -->
+      <div class="controls">
+        <button id="btn-reset" class="ctrl-btn ctrl-secondary" data-i18n="reset">リセット</button>
+        <button id="btn-start" class="ctrl-btn ctrl-primary"   data-i18n="start">開始</button>
+        <button id="btn-skip"  class="ctrl-btn ctrl-secondary" data-i18n="skip">スキップ</button>
+      </div>
+
+      <!-- Keyboard hint -->
+      <p class="keyboard-hint" data-i18n="keyboardHelp">Space: 開始/一時停止　R: リセット　1-4: カテゴリ切替</p>
+
+    </div>
+
+    <!-- ── Log Panel ──────────────────────────────────────────────────── -->
+    <div id="panel-log" class="panel" role="tabpanel" style="display:none">
+      <table class="log-table" aria-label="Session log">
+        <thead>
+          <tr>
+            <th>日時</th>
+            <th data-i18n="category">カテゴリ</th>
+            <th data-i18n="minutes">分</th>
+            <th>状態</th>
+          </tr>
+        </thead>
+        <tbody id="log-tbody">
+          <tr><td colspan="4" class="log-empty">履歴なし</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── Stats Panel ────────────────────────────────────────────────── -->
+    <div id="panel-stats" class="panel" role="tabpanel" style="display:none">
+
+      <p class="stats-total-label" data-i18n="totalFocus">総集中時間</p>
+      <p id="stats-total" class="stats-total-value">0分</p>
+
+      <!-- Category bar chart -->
+      <ul id="stats-by-category" class="stats-cat-list" aria-label="Focus time by category"></ul>
+
+      <!-- Daily bar chart -->
+      <h3 class="stats-sub-heading" data-i18n="sessionCount">セッション数</h3>
+      <div id="stats-daily" class="stats-daily" aria-label="Daily session count"></div>
+
+    </div>
+
+  </div>
+
+  <!-- ── Settings Modal ─────────────────────────────────────────────── -->
+  <div id="settings-modal" class="modal-backdrop" style="display:none" role="dialog" aria-modal="true" aria-labelledby="settings-heading">
+    <div id="settings-overlay" class="modal-overlay"></div>
+    <div class="modal-box">
+      <h2 id="settings-heading" data-i18n="settings">設定</h2>
+
+      <label class="setting-row">
+        <span data-i18n="workDuration">集中時間（分）</span>
+        <input id="set-work" type="number" min="1" max="120" value="25" />
+      </label>
+      <label class="setting-row">
+        <span data-i18n="breakDuration">休憩時間（分）</span>
+        <input id="set-break" type="number" min="1" max="60" value="5" />
+      </label>
+      <label class="setting-row">
+        <span data-i18n="longBreakDuration">長休憩時間（分）</span>
+        <input id="set-long" type="number" min="1" max="60" value="15" />
+      </label>
+      <label class="setting-row">
+        <span data-i18n="cyclesBeforeLong">長休憩までのサイクル数</span>
+        <input id="set-cycles" type="number" min="1" max="10" value="4" />
+      </label>
+
+      <div class="modal-actions">
+        <button id="settings-cancel" class="ctrl-btn ctrl-secondary" data-i18n="cancel">キャンセル</button>
+        <button id="settings-save"   class="ctrl-btn ctrl-primary"   data-i18n="save">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
