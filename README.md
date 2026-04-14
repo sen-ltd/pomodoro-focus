@@ -63,3 +63,10 @@ tests/
 ## ライセンス
 
 MIT. See [LICENSE](./LICENSE).
+
+<!-- sen-publish:links -->
+## Links
+
+- 🌐 Demo: https://sen.ltd/portfolio/pomodoro-focus/
+- 📝 dev.to: https://dev.to/sendotltd/a-pomodoro-timer-that-logs-every-session-and-shows-weekly-stats-no-framework-5fk7
+<!-- /sen-publish:links -->
